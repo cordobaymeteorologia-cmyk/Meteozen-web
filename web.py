@@ -13,7 +13,7 @@ st.set_page_config(page_title="METEO DEIVID", page_icon="⛈️", layout="wide")
 
 st.title("⛈️ MODELO METEOZEN")
 st.write(
-    "¡Bienvenido! Aquí puedes ver los mapas y las predicciones locales de mi propio modelo meteorológico: MeteoZen. ¡Espero que te guste!"
+    "¡Bienvenido! Aquí puedes ver los mapas y las predicciones locales de mi propio modelo meteorológico: MeteoZen. ¡Espero que te guste!⚠️ NOTA: Pese a que mi modelo puede ser fiable, siempre es recomendable contrastarlo con modelos globales (GFS/ECMWF) y con las previsiones de la AEMET. El modelo no es perfecto y puede cometer errores en las previsiones"
 )
 
 # Creamos las dos pestañas principales de la interfaz
