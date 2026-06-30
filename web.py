@@ -60,7 +60,7 @@ with tab_mapas:
         key="slider_mapas"
     )
 
-    fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=h + 2)
+    fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=hora + 2)
 
     st.subheader(
         f"📆 Mapa válido para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC+2"
