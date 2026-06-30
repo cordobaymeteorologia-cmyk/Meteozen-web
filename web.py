@@ -1,94 +1,186 @@
 import datetime
 import os
 import streamlit as st
+import pandas as pd
+import numpy as np
+import plotly.express as px  # Librería para las gráficas interactivas
 
 # ==========================================
 # CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
-st.set_page_config(page_title="METEO DEIVID", page_icon="⛈️", layout="centered")
+# Cambiamos el layout a "wide" (ancho) para que las gráficas del municipio se vean perfectas en pantalla
+st.set_page_config(page_title="METEO DEIVID", page_icon="⛈️", layout="wide")
 
 st.title("⛈️ MODELO METEOZEN")
 st.write(
-    "¡Bienvenido! Aquí puedes ver los mapas de mi propio modelo meteorológico: MeteoZen. ¡Espero que te guste!"
+    "¡Bienvenido! Aquí puedes ver los mapas y las predicciones locales de mi propio modelo meteorológico: MeteoZen. ¡Espero que te guste!"
 )
 
+# Creamos las dos pestañas principales de la interfaz
+tab_mapas, tab_municipios = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio"])
+
 # ==========================================
-# LÓGICA DINÁMICA DE FECHAS
+# LÓGICA DINÁMICA DE FECHAS (Se queda arriba para que sirva a ambas pestañas)
 # ==========================================
-# 1. Leer la fecha en la que corrió el modelo (generada por tu WRF.py)
 ruta_fecha = "fecha_run.txt"
 if os.path.exists(ruta_fecha):
     with open(ruta_fecha, "r") as f:
         fecha_str = f.read().strip()
     fecha_base = datetime.datetime.strptime(fecha_str, "%d/%m/%Y %H:%M")
 else:
-    # Plan B por si acaso
     fecha_base = datetime.datetime.now().replace(
         hour=0, minute=0, second=0, microsecond=0
     )
 
-# 2. Sumamos 1 día automáticamente porque la previsión es para el día siguiente
 fecha_inicio_prevision = fecha_base + datetime.timedelta(days=1)
 
 
 # ==========================================
-# MENÚS EN LA INTERFAZ
+# PESTAÑA 1: MAPAS GENERALES (Tu código original intacto)
 # ==========================================
-# Definición de las carpetas (ahora relativas, dentro del repositorio)
-OPCIONES = {
-    "Radar de Reflectividad ⛈️": os.path.join(
-        "salida_radar", "radar_{:02d}.png"
-    ),
-    "Temperatura a 2m 🌡️": os.path.join(
-        "salida_temperatura", "temperatura_{:02d}.png"
-    ),
-    "Viento a 10m 💨": os.path.join("salida_viento", "viento_{:02d}.png"),
-    "Lluvia Horaria 🌧️": os.path.join(
-        "salida_lluvia_horaria", "lluvia_{:02d}.png"
-    ),
-    "Lluvia Acumulada 🌊": os.path.join(
-        "salida_lluvia_acumulada", "lluvia_acum_{:02d}.png"
-    ),
-}
+with tab_mapas:
+    OPCIONES = {
+        "Radar de Reflectividad ⛈️": os.path.join("salida_radar", "radar_{:02d}.png"),
+        "Temperatura a 2m 🌡️": os.path.join("salida_temperatura", "temperatura_{:02d}.png"),
+        "Viento a 10m 💨": os.path.join("salida_viento", "viento_{:02d}.png"),
+        "Lluvia Horaria 🌧️": os.path.join("salida_lluvia_horaria", "lluvia_{:02d}.png"),
+        "Lluvia Acumulada 🌊": os.path.join("salida_lluvia_acumulada", "lluvia_acum_{:02d}.png"),
+    }
 
-# 1. Selector de variable meteorológica
-variable_seleccionada = st.selectbox(
-    "Selecciona la variable a visualizar:", list(OPCIONES.keys())
-)
-
-# 2. Control deslizante (Slider) para las horas (de 0 a 23)
-hora = st.slider(
-    "Paso de tiempo (Hora de la simulación):",
-    min_value=0,
-    max_value=23,
-    value=0,
-    format="Hora %02d:00",
-)
-
-# 3. Cálculo de la fecha exacta para la hora seleccionada
-fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=hora)
-
-# 4. Mostramos la fecha real e hiperprecisa en la web
-st.subheader(
-    f"📆 Mapa válido para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC"
-)
-
-
-# ==========================================
-# RENDERIZADO DEL MAPA
-# ==========================================
-# Construimos la ruta exacta de la imagen usando la hora del slider
-plantilla_ruta = OPCIONES[variable_seleccionada]
-ruta_imagen = plantilla_ruta.format(hora)
-
-# Comprobamos si el archivo existe en el repositorio antes de pintarlo
-if os.path.exists(ruta_imagen):
-    st.image(ruta_imagen, use_container_width=True)
-else:
-    st.error(
-        f"⚠️ No se encontró el mapa para la Hora {hora:02d}. Todavía no existen datos en el servidor."
+    variable_seleccionada = st.selectbox(
+        "Selecciona la variable a visualizar:", list(OPCIONES.keys()), key="var_mapas"
     )
 
-st.info(
-    "💡 Consejo: Usa el ratón o las flechas de dirección del teclado para desplazarte entre las horas."
-)
+    hora = st.slider(
+        "Paso de tiempo (Hora de la simulación):",
+        min_value=0,
+        max_value=23,
+        value=0,
+        format="Hora %02d:00",
+        key="slider_mapas"
+    )
+
+    fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=hora)
+
+    st.subheader(
+        f"📆 Mapa válido para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC"
+    )
+
+    plantilla_ruta = OPCIONES[variable_seleccionada]
+    ruta_imagen = plantilla_ruta.format(hora)
+
+    if os.path.exists(ruta_imagen):
+        st.image(ruta_imagen, use_container_width=True)
+    else:
+        st.error(
+            f"⚠️ No se encontró el mapa para la Hora {hora:02d}. Todavía no existen datos en el servidor."
+        )
+
+    st.info(
+        "💡 Consejo: Usa el ratón o las flechas de dirección del teclado para desplazarte entre las horas."
+    )
+
+
+# ==========================================
+# PESTAÑA 2: PREDICCIÓN POR MUNICIPIO (Buscador Local)
+# ==========================================
+with tab_municipios:
+    st.header("🔍 Buscador de Predicción por Localidad")
+    st.write("Consulta la evolución del tiempo directamente en tu municipio para las próximas 24 horas.")
+    
+    # Cargamos el archivo de localidades usando la caché de Streamlit
+    @st.cache_data
+    def cargar_localidades():
+        if os.path.exists("localidades.csv"):
+            return pd.read_csv("localidades.csv")
+        return None
+
+    df_pueblos = cargar_localidades()
+
+    if df_pueblos is not None:
+        # Buscador ordenado alfabéticamente
+        lista_pueblos = sorted(df_pueblos["Localidad"].unique())
+        pueblo_elegido = st.selectbox("Escribe o selecciona tu municipio:", lista_pueblos, key="selector_pueblo")
+        
+        # Extraemos coordenadas y datos de la base de datos
+        datos_pueblo = df_pueblos[df_pueblos["Localidad"] == pueblo_elegido].iloc[0]
+        lat_pueblo = datos_pueblo["Latitud"]
+        lon_pueblo = datos_pueblo["Longitud"]
+        provincia = datos_pueblo["Provincia"]
+        altitud = datos_pueblo.get("Altitud", "N/A")
+        
+        st.markdown(f"### 📍 Pronóstico para: **{pueblo_elegido} ({provincia})** — *Altitud: {altitud} m*")
+        
+        # Usamos los datos de la Hora 00 para calcular las distancias en la malla del WRF
+        ruta_hora_00 = os.path.join("salida_datos", "datos_hora_00.csv")
+        
+        if os.path.exists(ruta_hora_00):
+            df_malla_base = pd.read_csv(ruta_hora_00)
+            
+            # Cálculo del vecino más cercano (Distancia euclidiana)
+            distancias = np.sqrt((df_malla_base["lat_wrf"] - lat_pueblo)**2 + (df_malla_base["lon_wrf"] - lon_pueblo)**2)
+            indice_mas_cercano = distancias.idxmin()
+            
+            # Construimos la serie temporal recopilando los datos de cada hora
+            cronograma = []
+            for h in range(24):
+                ruta_hora = os.path.join("salida_datos", f"datos_hora_{h:02d}.csv")
+                if os.path.exists(ruta_hora):
+                    df_hora = pd.read_csv(ruta_hora)
+                    fila_pueblo = df_hora.iloc[indice_mas_cercano]
+                    
+                    # Calculamos el momento exacto en el tiempo para esta hora
+                    momento_exacto = fecha_inicio_prevision + datetime.timedelta(hours=h)
+                    
+                    cronograma.append({
+                        "Fecha/Hora": momento_exacto.strftime("%d/%m %H:%M"),
+                        "Temperatura (°C)": fila_pueblo["temperatura"],
+                        "Viento (km/h)": fila_pueblo["viento"],
+                        "Lluvia (mm)": fila_pueblo["lluvia"]
+                    })
+            
+            df_pronostico = pd.DataFrame(cronograma)
+            
+            # --- MÓDULO VISUAL: Tarjetas de resumen estético ---
+            col1, col2, col3 = st.columns(3)
+            col1.metric("Temperatura Inicial", f"{df_pronostico.iloc[0]['Temperatura (°C)']} °C")
+            col2.metric("Racha Viento Máx.", f"{df_pronostico['Viento (km/h)'].max()} km/h")
+            col3.metric("Lluvia Máx. Acumulada", f"{df_pronostico['Lluvia (mm)'].max()} mm")
+            
+            st.write("---")
+            
+            # --- GRÁFICA 1: Temperatura interactiva (Plotly) ---
+            fig_temp = px.line(
+                df_pronostico, x="Fecha/Hora", y="Temperatura (°C)", 
+                title="📈 Evolución de la Temperatura (°C)", markers=True,
+                color_discrete_sequence=['#FF4B4B']
+            )
+            # Personalizamos el diseño para que quede limpio
+            fig_temp.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Temperatura (°C)")
+            st.plotly_chart(fig_temp, use_container_width=True)
+            
+            # --- GRÁFICAS 2 y 3: Lluvia y Viento en paralelo ---
+            col_g1, col_g2 = st.columns(2)
+            
+            with col_g1:
+                fig_lluvia = px.bar(
+                    df_pronostico, x="Fecha/Hora", y="Lluvia (mm)", 
+                    title="🌧️ Lluvia Acumulada en la simulación (mm)",
+                    color_discrete_sequence=['#0083B0']
+                )
+                fig_lluvia.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Precipitación (mm)")
+                st.plotly_chart(fig_lluvia, use_container_width=True)
+                
+            with col_g2:
+                fig_viento = px.line(
+                    df_pronostico, x="Fecha/Hora", y="Viento (km/h)", 
+                    title="💨 Rachas de Viento (km/h)", markers=True,
+                    color_discrete_sequence=['#FF9933']
+                )
+                fig_viento.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Velocidad (km/h)")
+                st.plotly_chart(fig_viento, use_container_width=True)
+                
+        else:
+            st.warning("⏳ Los datos numéricos de los municipios se están procesando o subiendo al repositorio. Esperando archivos...")
+    else:
+        st.error("❌ No se encuentra el archivo 'localidades.csv' en la raíz de la web. Asegúrate de hacerle un git push.")
