@@ -70,7 +70,12 @@ with tab_mapas:
     ruta_imagen = plantilla_ruta.format(hora)
 
     if os.path.exists(ruta_imagen):
-        st.image(ruta_imagen, use_container_width=True)
+         # Creamos 3 columnas: vacía (15%), centro para el mapa (70%), vacía (15%)
+        # Puedes jugar con los números (ej. [0.2, 0.6, 0.2]) si lo quieres aún más estrecho
+        col_izq, col_mapa, col_der = st.columns([0.15, 0.70, 0.15])
+        
+        with col_mapa:
+            st.image(ruta_imagen, use_container_width=True)
     else:
         st.error(
             f"⚠️ No se encontró el mapa para la Hora {hora:02d}. Todavía no existen datos en el servidor."
