@@ -170,7 +170,7 @@ with tab_municipios:
             
             # --- GRÁFICA 1: Temperatura interactiva (Plotly) ---
             fig_temp = px.line(
-                df_pronostico, x="Fecha/Hora (UTC+2)", y="Temperatura (°C)", 
+                df_pronostico, x="Fecha/Hora", y="Temperatura (°C)", 
                 title="📈 Temperatura (°C)", markers=True,
                 color_discrete_sequence=['#FF4B4B']
             )
@@ -183,16 +183,16 @@ with tab_municipios:
             
             with col_g1:
                 fig_lluvia = px.bar(
-                    df_pronostico, x="Fecha/Hora (UTC+2)", y="Lluvia (mm)", 
+                    df_pronostico, x="Fecha/Hora", y="Lluvia (mm)", 
                     title="🌧️ Precipitación (mm)",
                     color_discrete_sequence=['#0083B0']
                 )
-                fig_lluvia.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Precipitación (mm)")
+                fig_lluvia.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Precipitación (mm)")
                 st.plotly_chart(fig_lluvia, use_container_width=True)
                 
             with col_g2:
                 fig_viento = px.line(
-                    df_pronostico, x="Fecha/Hora (UTC+2)", y="Viento (km/h)", 
+                    df_pronostico, x="Fecha/Hora", y="Viento (km/h)", 
                     title="💨 Rachas de Viento (km/h)", markers=True,
                     color_discrete_sequence=['#FF9933']
                 )
