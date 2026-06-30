@@ -89,11 +89,12 @@ with tab_municipios:
     st.write("Consulta la evolución del tiempo directamente en tu municipio para las próximas 24 horas.")
     
     # Cargamos el archivo de localidades usando la caché de Streamlit
-    @st.cache_data
-    def cargar_localidades():
-        if os.path.exists("localidades.csv"):
-            return pd.read_csv("localidades.csv")
-        return None
+    @st.cache_data 
+ def cargar_localidades():
+    if os.path.exists("localidades.csv"):
+        # Añadimos sep=";" para indicarle el separador correcto del Gist
+        return pd.read_csv("localidades.csv", sep=";")
+    return None
 
     df_pueblos = cargar_localidades()
 
