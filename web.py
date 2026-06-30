@@ -60,10 +60,10 @@ with tab_mapas:
         key="slider_mapas"
     )
 
-    fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=hora)
+    fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=h + 2)
 
     st.subheader(
-        f"📆 Mapa válido para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC"
+        f"📆 Mapa válido para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC+2"
     )
 
     plantilla_ruta = OPCIONES[variable_seleccionada]
@@ -139,7 +139,7 @@ with tab_municipios:
                     fila_pueblo = df_hora.iloc[indice_mas_cercano]
                     
                     # Calculamos el momento exacto en el tiempo para esta hora
-                    momento_exacto = fecha_inicio_prevision + datetime.timedelta(hours=h)
+                    momento_exacto = fecha_inicio_prevision + datetime.timedelta(hours=h + 2)
                     
                     cronograma.append({
                         "Fecha/Hora": momento_exacto.strftime("%d/%m %H:%M"),
@@ -170,12 +170,12 @@ with tab_municipios:
             
             # --- GRÁFICA 1: Temperatura interactiva (Plotly) ---
             fig_temp = px.line(
-                df_pronostico, x="Fecha/Hora", y="Temperatura (°C)", 
+                df_pronostico, x="Fecha/Hora (UTC+2)", y="Temperatura (°C)", 
                 title="📈 Temperatura (°C)", markers=True,
                 color_discrete_sequence=['#FF4B4B']
             )
             # Personalizamos el diseño para que quede limpio
-            fig_temp.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Temperatura (°C)")
+            fig_temp.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Temperatura (°C)")
             st.plotly_chart(fig_temp, use_container_width=True)
             
             # --- GRÁFICAS 2 y 3: Lluvia y Viento en paralelo ---
@@ -183,7 +183,7 @@ with tab_municipios:
             
             with col_g1:
                 fig_lluvia = px.bar(
-                    df_pronostico, x="Fecha/Hora", y="Lluvia (mm)", 
+                    df_pronostico, x="Fecha/Hora (UTC+2)", y="Lluvia (mm)", 
                     title="🌧️ Precipitación (mm)",
                     color_discrete_sequence=['#0083B0']
                 )
@@ -192,11 +192,11 @@ with tab_municipios:
                 
             with col_g2:
                 fig_viento = px.line(
-                    df_pronostico, x="Fecha/Hora", y="Viento (km/h)", 
+                    df_pronostico, x="Fecha/Hora (UTC+2)", y="Viento (km/h)", 
                     title="💨 Rachas de Viento (km/h)", markers=True,
                     color_discrete_sequence=['#FF9933']
                 )
-                fig_viento.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Velocidad (km/h)")
+                fig_viento.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Velocidad (km/h)")
                 st.plotly_chart(fig_viento, use_container_width=True)
                 
         else:
