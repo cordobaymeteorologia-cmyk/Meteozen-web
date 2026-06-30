@@ -90,11 +90,11 @@ with tab_municipios:
     
     # Cargamos el archivo de localidades usando la caché de Streamlit
     @st.cache_data 
- def cargar_localidades():
-    if os.path.exists("localidades.csv"):
+    def cargar_localidades():
+        if os.path.exists("localidades.csv"):
         # Añadimos sep=";" para indicarle el separador correcto del Gist
-        return pd.read_csv("localidades.csv", sep=";")
-    return None
+            return pd.read_csv("localidades.csv", sep=";")
+        return None
 
     df_pueblos = cargar_localidades()
 
