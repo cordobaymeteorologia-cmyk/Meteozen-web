@@ -146,17 +146,27 @@ with tab_municipios:
             df_pronostico = pd.DataFrame(cronograma)
             
             # --- MÓDULO VISUAL: Tarjetas de resumen estético ---
-            col1, col2, col3 = st.columns(3)
-            col1.metric("Temperatura Inicial", f"{df_pronostico.iloc[0]['Temperatura (°C)']} °C")
-            col2.metric("Racha Viento Máx.", f"{df_pronostico['Viento (km/h)'].max()} km/h")
-            col3.metric("Lluvia Máx. Acumulada", f"{df_pronostico['Lluvia (mm)'].max()} mm")
+            col1, col2, col3, col4 = st.columns(4) # Añadimos una columna más para meter la mínima y la máxima
+            
+            # Calculamos los valores directamente del DataFrame de pronóstico
+            temp_max = df_pronostico["Temperatura (°C)"].max()
+            temp_min = df_pronostico["Temperatura (°C)"].min()
+            viento_max = df_pronostico["Viento (km/h)"].max()
+            lluvia_total = df_pronostico["Lluvia (mm)"].max()
+            
+            # Pintamos las 4 tarjetas en horizontal
+            col1.metric("Temperatura Máxima", f"{temp_max} °C")
+            col2.metric("Temperatura Mínima", f"{temp_min} °C")
+            col3.metric("Racha Viento Máx.", f"{viento_max} km/h")
+            col4.metric("Precip. Acumulada", f"{lluvia_total} mm")
+
             
             st.write("---")
             
             # --- GRÁFICA 1: Temperatura interactiva (Plotly) ---
             fig_temp = px.line(
                 df_pronostico, x="Fecha/Hora", y="Temperatura (°C)", 
-                title="📈 Evolución de la Temperatura (°C)", markers=True,
+                title="📈 Temperatura (°C)", markers=True,
                 color_discrete_sequence=['#FF4B4B']
             )
             # Personalizamos el diseño para que quede limpio
@@ -169,7 +179,7 @@ with tab_municipios:
             with col_g1:
                 fig_lluvia = px.bar(
                     df_pronostico, x="Fecha/Hora", y="Lluvia (mm)", 
-                    title="🌧️ Lluvia Acumulada en la simulación (mm)",
+                    title="🌧️ Precipitación (mm)",
                     color_discrete_sequence=['#0083B0']
                 )
                 fig_lluvia.update_layout(xaxis_title="Fecha y Hora (UTC)", yaxis_title="Precipitación (mm)")
