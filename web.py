@@ -93,7 +93,7 @@ with tab_mapas:
 # PESTAÑA 2: PREDICCIÓN POR MUNICIPIO (Buscador Local)
 # ==========================================
 with tab_municipios:
-    st.header("🔍 Buscador de Predicción por Localidad")
+    st.header("🔍 Predicción por Localidad")
     st.write("Consulta la evolución del tiempo directamente en tu municipio para las próximas 24 horas.")
     
     # Cargamos el archivo de localidades usando la caché de Streamlit
@@ -121,7 +121,7 @@ with tab_municipios:
         st.write("---")
         
         # 2. SECCIÓN MAPA INTERACTIVO ESTILO WINDY
-        st.subheader("🗺️ Capa de Simulación Dinámica (Estilo Windy)")
+        st.subheader("🗺️ Mapa interactivo")
         
         col_capa, col_hora = st.columns([1, 1])
         
@@ -166,7 +166,7 @@ with tab_municipios:
                 cross_origin=False
             ).add_to(m)
         else:
-            st.caption("⚠️ Capa transparente no disponible. Ejecuta tus scripts independientes primero.")
+            st.caption("⚠️ Datos no disponibles en el servidor.")
         
         folium.Marker(
             location=[lat_pueblo, lon_pueblo],
@@ -234,6 +234,6 @@ with tab_municipios:
                 fig_viento.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Velocidad (km/h)")
                 st.plotly_chart(fig_viento, use_container_width=True)
         else:
-            st.warning("⏳ Los datos numéricos para los municipios aún se están procesando por el modelo...")
+            st.warning("⏳ Los datos numéricos para los municipios aún se están procesando...")
     else:
-        st.error("❌ No se pudo cargar el archivo 'localidades.csv'. Por favor, revisa que esté en el directorio correcto.")
+        st.error("❌ Los datos de las localidades no están disponibles ahora mismo.")
