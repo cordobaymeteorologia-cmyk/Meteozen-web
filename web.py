@@ -112,32 +112,54 @@ with tab_municipios:
     if df_pueblos is not None:
 
 	  # --- NUEVO: SECCIÓN MAPA INTERACTIVO ---
+         st.subheader("🗺️ Capa de Simulación Dinámica (Estilo Windy)")
         
-        st.subheader("🗺️ Mapa de Estaciones de Consulta")
-    
-        # 1. Creamos el mapa base igual que antes
-        m = folium.Map(location=[40.4167, -3.7037], zoom_start=6, tiles="OpenStreetMap")
-    
-        # 2. CREAMOS EL CLÚSTER (El truco de velocidad)
-        marker_cluster = MarkerCluster().add_to(m)
-    
-        # 3. Añadimos los marcadores AL CLÚSTER en lugar de al mapa directamente
-        for idx, fila in df_pueblos.iterrows():
-            html_popup = f"""
-            <div style='font-family: sans-serif; min-width: 140px;'>
-            <h5 style='margin:0 0 5px 0;'><b>{fila['Localidad']}</b></h5>
-            <p style='margin:0;'>📍 Prov: {fila['Provincia']}</p>
-            <p style='margin:0;'>⛰️ Altitud: {fila['Altitud']} m</p>
-        </div>
-        """
+        # 1. Selector rápido para la capa del mapa
+        capa_seleccionada = st.selectbox(
+            "Selecciona la capa del mapa:",
+            ["Temperatura 🌡️", "Lluvia Horaria 🌧️", "Viento 💨"],
+            key="capa_mapa_interactivo"
+        )
+        
+        # Mapeamos la selección a tus carpetas de imágenes existentes
+        MAPA_CAPAS = {
+            "Temperatura 🌡️": os.path.join("salida_temperatura", "temperatura_{:02d}.png"),
+            "Lluvia Horaria 🌧️": os.path.join("salida_lluvia_horaria", "lluvia_{:02d}.png"),
+            "Viento 💨": os.path.join("salida_viento", "viento_{:02d}.png"),
+        }
+        
+        # Usamos la hora del slider que ya tienes en la pestaña 1 (`hora`)
+        ruta_capa_img = MAPA_CAPAS[capa_seleccionada].format(hora)
+        
+        # 2. Configurar los límites geográficos exactos de tu simulación WRF
+        # NOTA: Aquí debes poner las coordenadas Máximas y Mínimas reales de tu dominio de 5km
+        # [Latitud Sur, Longitud Oeste], [Latitud Norte, Longitud Este]
+        # Ejemplo aproximado para el sur/centro de España:
+        limites_mapa = [[35.5, -9.5], [40.5, -1.5]] 
+        
+        # 3. Crear el mapa base (podemos usar un estilo oscuro "CartoDB positron" o "dark_matter" para que resalten los colores)
+        m = folium.Map(location=[37.8882, -4.7794], zoom_start=7, tiles="CartoDB dark_matter")
+        
+        # 4. Superponer la imagen de la simulación con transparencia (opacity)
+        if os.path.exists(ruta_capa_img):
+            folium.raster_layers.ImageOverlay(
+                image=ruta_capa_img,
+                bounds=limites_mapa,
+                opacity=0.6,  # Ajusta la transparencia para ver las carreteras e información debajo
+                interactive=True,
+                cross_origin=False
+            ).add_to(m)
+        
+        # 5. Añadir también el marcador del pueblo que esté seleccionado en el buscador para ubicarlo
         folium.Marker(
-            location=[fila["Latitud"], fila["Longitud"]],
-            popup=folium.Popup(html_popup, max_width=250),
-            icon=folium.Icon(color="blue", icon="cloud")
-        ).add_to(marker_cluster) # <-- Cambiado 'm' por 'marker_cluster'
+            location=[lat_pueblo, lon_pueblo],
+            popup=f"📍 {pueblo_elegido}",
+            icon=folium.Icon(color="red", icon="geo-alt-fill", prefix="fa")
+        ).add_to(m)
         
-        # Renderizamos el mapa
-        st_folium(m, width="100%", height=450, key="mapa_municipios")
+        # Renderizar en Streamlit
+        st_folium(m, width="100%", height=500, key="mapa_windy_render")
+        
         
         st.write("---")
 
