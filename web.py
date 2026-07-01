@@ -6,7 +6,8 @@ import numpy as np
 import plotly.express as px  # Librería para las gráficas interactivas
 import folium
 from streamlit_folium import st_folium
-
+from folium.plugins import MarkerCluster
+        
 # ==========================================
 # CONFIGURACIÓN DE LA PÁGINA WEB
 # ==========================================
