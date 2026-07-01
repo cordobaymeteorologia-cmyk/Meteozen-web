@@ -107,11 +107,10 @@ with tab_municipios:
     df_pueblos = cargar_localidades()
 
     if df_pueblos is not None:
-        # 1. EL BUSCADOR PRIMERO (Para que Python guarde el pueblo y sus coordenadas)
+        # 1. Buscador de pueblos y obtención de coordenadas
         lista_pueblos = sorted(df_pueblos["Localidad"].unique())
         pueblo_elegido = st.selectbox("Escribe o selecciona tu municipio:", lista_pueblos, key="selector_pueblo")
         
-        # Extraemos las coordenadas inmediatamente
         datos_pueblo = df_pueblos[df_pueblos["Localidad"] == pueblo_elegido].iloc[0]
         lat_pueblo = datos_pueblo["Latitud"]
         lon_pueblo = datos_pueblo["Longitud"]
@@ -119,10 +118,9 @@ with tab_municipios:
         altitud = datos_pueblo.get("Altitud", "N/A")
         
         st.markdown(f"### 📍 Pronóstico para: **{pueblo_elegido} ({provincia})** — *Altitud: {altitud} m*")
-        
         st.write("---")
         
-        # 2. EL MAPA INTERACTIVO DESPUÉS (Ahora ya conoce lat_pueblo y lon_pueblo)
+        # 2. SECCIÓN MAPA INTERACTIVO ESTILO WINDY
         st.subheader("🗺️ Capa de Simulación Dinámica (Estilo Windy)")
         
         col_capa, col_hora = st.columns([1, 1])
@@ -147,7 +145,7 @@ with tab_municipios:
         fecha_mapa_interactivo = fecha_inicio_prevision + datetime.timedelta(hours=hora_mapa + 2)
         st.markdown(f"⏱️ **Mapa válido para el:** `{fecha_mapa_interactivo.strftime('%d/%m/%Y a las %H:%M')} UTC+2`")
         
-        # 1. ACTUALIZADO: Apuntamos a tus carpetas de scripts independientes
+        # Rutas de tus scripts independientes (*_mapa.py)
         MAPA_CAPAS = {
             "Temperatura 🌡️": os.path.join("salida_temperatura_mapa", "temperatura_{:02d}.png"),
             "Lluvia Horaria 🌧️": os.path.join("salida_lluvia_horaria_mapa", "lluvia_{:02d}.png"),
@@ -155,32 +153,87 @@ with tab_municipios:
         }
         
         ruta_capa_img = MAPA_CAPAS[capa_seleccionada].format(hora_mapa)
-        
-        # 2. ACTUALIZADO: Límites geográficos clavados al milímetro con Matplotlib
-        # [Latitud Mínima, Longitud Mínima], [Latitud Máxima, Longitud Máxima]
         limites_mapa = [[35.0, -10.0], [44.5, 4.5]] 
         
-        # Mapa base oscuro estilo Windy
-        m = folium.Map(location=[37.8882, -4.7794], zoom_start=7, tiles="CartoDB dark_matter")
+        m = folium.Map(location=[lat_pueblo, lon_pueblo], zoom_start=8, tiles="CartoDB dark_matter")
         
-        # 3. Superponer la imagen limpia y transparente
         if os.path.exists(ruta_capa_img):
             folium.raster_layers.ImageOverlay(
                 image=ruta_capa_img,
                 bounds=limites_mapa,
-                opacity=0.6,          # Transparencia de la mancha de color
+                opacity=0.6,
                 interactive=True,
                 cross_origin=False
             ).add_to(m)
         else:
-            st.caption("⚠️ Capa de simulación transparente no disponible para esta hora. Ejecuta tus scripts *_mapa.py primero.")
+            st.caption("⚠️ Capa transparente no disponible. Ejecuta tus scripts independientes primero.")
         
-        # Marcador del pueblo seleccionado
         folium.Marker(
             location=[lat_pueblo, lon_pueblo],
             popup=f"📍 {pueblo_elegido}",
             icon=folium.Icon(color="red", icon="info-sign")
         ).add_to(m)
         
-        # Renderizar en la web
         st_folium(m, width="100%", height=500, key="mapa_windy_render")
+        st.write("---")
+        
+        # 3. LÓGICA DE LAS GRÁFICAS Y PREVISIÓN LOCAL (¡Recuperada!)
+        ruta_hora_00 = os.path.join("salida_datos", "datos_hora_00.csv")
+        
+        if os.path.exists(ruta_hora_00):
+            df_malla_base = pd.read_csv(ruta_hora_00)
+            
+            # Cálculo del vecino más cercano en la malla WRF
+            distancias = np.sqrt((df_malla_base["lat_wrf"] - lat_pueblo)**2 + (df_malla_base["lon_wrf"] - lon_pueblo)**2)
+            indice_mas_cercano = distancias.idxmin()
+            
+            cronograma = []
+            for h in range(24):
+                ruta_hora = os.path.join("salida_datos", f"datos_hora_{h:02d}.csv")
+                if os.path.exists(ruta_hora):
+                    df_hora = pd.read_csv(ruta_hora)
+                    fila_pueblo = df_hora.iloc[indice_mas_cercano]
+                    momento_exacto = fecha_inicio_prevision + datetime.timedelta(hours=h + 2)
+                    
+                    cronograma.append({
+                        "Fecha/Hora": momento_exacto.strftime("%d/%m %H:%M"),
+                        "Temperatura (°C)": fila_pueblo["temperatura"],
+                        "Viento (km/h)": fila_pueblo["viento"],
+                        "Lluvia (mm)": fila_pueblo["lluvia"]
+                    })
+            
+            df_pronostico = pd.DataFrame(cronograma)
+            
+            # Tarjetas de resumen (Métricas)
+            col1, col2, col3, col4 = st.columns(4)
+            temp_max = df_pronostico["Temperatura (°C)"].max()
+            temp_min = df_pronostico["Temperatura (°C)"].min()
+            viento_max = df_pronostico["Viento (km/h)"].max()
+            lluvia_total = df_pronostico["Lluvia (mm)"].sum()  # Sumamos la lluvia para tener el acumulado del día
+            
+            col1.metric("Temperatura Máxima", f"{temp_max:.1f} °C")
+            col2.metric("Temperatura Mínima", f"{temp_min:.1f} °C")
+            col3.metric("Racha Viento Máx.", f"{viento_max:.1f} km/h")
+            col4.metric("Precip. Acumulada", f"{lluvia_total:.1f} mm")
+            
+            st.write("---")
+            
+            # Gráfica interactiva de Temperatura
+            fig_temp = px.line(df_pronostico, x="Fecha/Hora", y="Temperatura (°C)", title="📈 Evolución de la Temperatura (°C)", markers=True, color_discrete_sequence=['#FF4B4B'])
+            fig_temp.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Temperatura (°C)")
+            st.plotly_chart(fig_temp, use_container_width=True)
+            
+            # Gráficas de Lluvia y Viento en paralelo
+            col_g1, col_g2 = st.columns(2)
+            with col_g1:
+                fig_lluvia = px.bar(df_pronostico, x="Fecha/Hora", y="Lluvia (mm)", title="🌧️ Precipitación Horaria (mm)", color_discrete_sequence=['#0083B0'])
+                fig_lluvia.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Precipitación (mm)")
+                st.plotly_chart(fig_lluvia, use_container_width=True)
+            with col_g2:
+                fig_viento = px.line(df_pronostico, x="Fecha/Hora", y="Viento (km/h)", title="💨 Velocidad del Viento (km/h)", markers=True, color_discrete_sequence=['#FF9933'])
+                fig_viento.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Velocidad (km/h)")
+                st.plotly_chart(fig_viento, use_container_width=True)
+        else:
+            st.warning("⏳ Los datos numéricos para los municipios aún se están procesando por el modelo...")
+    else:
+        st.error("❌ No se pudo cargar el archivo 'localidades.csv'. Por favor, revisa que esté en el directorio correcto.")
