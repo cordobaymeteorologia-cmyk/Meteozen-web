@@ -209,7 +209,7 @@ with tab_municipios:
             temp_max = df_pronostico["Temperatura (°C)"].max()
             temp_min = df_pronostico["Temperatura (°C)"].min()
             viento_max = df_pronostico["Viento (km/h)"].max()
-            lluvia_total = df_pronostico["Lluvia (mm)"].sum()  # Sumamos la lluvia para tener el acumulado del día
+            lluvia_total = df_pronostico["Lluvia (mm)"].max()  # Sumamos la lluvia para tener el acumulado del día
             
             col1.metric("Temperatura Máxima", f"{temp_max:.1f} °C")
             col2.metric("Temperatura Mínima", f"{temp_min:.1f} °C")
