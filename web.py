@@ -4,6 +4,8 @@ import streamlit as st
 import pandas as pd
 import numpy as np
 import plotly.express as px  # Librería para las gráficas interactivas
+import folium
+from streamlit_folium import st_folium
 
 # ==========================================
 # CONFIGURACIÓN DE LA PÁGINA WEB
