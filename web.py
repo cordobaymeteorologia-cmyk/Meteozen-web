@@ -107,6 +107,35 @@ with tab_municipios:
     df_pueblos = cargar_localidades()
 
     if df_pueblos is not None:
+
+	  # --- NUEVO: SECCIÓN MAPA INTERACTIVO ---
+        st.subheader("🗺️ Mapa de Estaciones de Consulta")
+        
+        # Creamos el mapa centrado en España de fondo
+        m = folium.Map(location=[40.4167, -3.7037], zoom_start=6, tiles="OpenStreetMap")
+        
+        # Filtramos una muestra o añadimos los pueblos principales para no saturar el navegador si son miles.
+        # En este ejemplo añadimos todos, pero si notas lentitud puedes filtrar por provincias.
+        for idx, fila in df_pueblos.iterrows():
+            # Crear un bocadillo estético para el mapa
+            html_popup = f"""
+            <div style='font-family: sans-serif; min-width: 140px;'>
+                <h5 style='margin:0 0 5px 0;'><b>{fila['Localidad']}</b></h5>
+                <p style='margin:0;'>📍 Prov: {fila['Provincia']}</p>
+                <p style='margin:0;'>⛰️ Altitud: {fila['Altitud']} m</p>
+            </div>
+            """
+            folium.Marker(
+                location=[fila["Latitud"], fila["Longitud"]],
+                popup=folium.Popup(html_popup, max_width=250),
+                icon=folium.Icon(color="blue", icon="cloud")
+            ).add_to(m)
+            
+        # Renderizamos el mapa en la interfaz ocupando buen espacio
+        st_folium(m, width="100%", height=450, key="mapa_municipios")
+        
+        st.write("---")
+
         # Buscador ordenado alfabéticamente
         lista_pueblos = sorted(df_pueblos["Localidad"].unique())
         pueblo_elegido = st.selectbox("Escribe o selecciona tu municipio:", lista_pueblos, key="selector_pueblo")

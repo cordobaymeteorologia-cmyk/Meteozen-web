@@ -1,3 +1,6 @@
 pandas
 numpy
 plotly
+streamlit-folium
+folium
+
