@@ -112,14 +112,31 @@ with tab_municipios:
     if df_pueblos is not None:
 
 	  # --- NUEVO: SECCIÓN MAPA INTERACTIVO ---
-         st.subheader("🗺️ Capa de Simulación Dinámica (Estilo Windy)")
+        st.subheader("🗺️ Capa de Simulación Dinámica (Estilo Windy)")
         
-        # 1. Selector rápido para la capa del mapa
-        capa_seleccionada = st.selectbox(
-            "Selecciona la capa del mapa:",
-            ["Temperatura 🌡️", "Lluvia Horaria 🌧️", "Viento 💨"],
-            key="capa_mapa_interactivo"
-        )
+        # 1. Selectores en paralelo: uno para la capa y otro para la hora del mapa
+        col_capa, col_hora = st.columns([1, 1])
+        
+        with col_capa:
+            capa_seleccionada = st.selectbox(
+                "Selecciona la capa del mapa:",
+                ["Temperatura 🌡️", "Lluvia Horaria 🌧️", "Viento 💨"],
+                key="capa_mapa_interactivo"
+            )
+            
+        with col_hora:
+            hora_mapa = st.slider(
+                "Ver hora de la simulación:",
+                min_value=0,
+                max_value=23,
+                value=0,
+                format="Hora %02d:00",
+                key="slider_mapa_interactivo"
+            )
+            
+        # Calculamos la fecha/hora exacta válida para este mapa interactivo
+        fecha_mapa_interactivo = fecha_inicio_prevision + datetime.timedelta(hours=hora_mapa + 2)
+        st.markdown(f"⏱️ **Mapa válido para el:** `{fecha_mapa_interactivo.strftime('%d/%m/%Y a las %H:%M')} UTC+2`")
         
         # Mapeamos la selección a tus carpetas de imágenes existentes
         MAPA_CAPAS = {
@@ -128,38 +145,37 @@ with tab_municipios:
             "Viento 💨": os.path.join("salida_viento", "viento_{:02d}.png"),
         }
         
-        # Usamos la hora del slider que ya tienes en la pestaña 1 (`hora`)
-        ruta_capa_img = MAPA_CAPAS[capa_seleccionada].format(hora)
+        # Usamos la hora del nuevo slider exclusivo del mapa (`hora_mapa`)
+        ruta_capa_img = MAPA_CAPAS[capa_seleccionada].format(hora_mapa)
         
         # 2. Configurar los límites geográficos exactos de tu simulación WRF
-        # NOTA: Aquí debes poner las coordenadas Máximas y Mínimas reales de tu dominio de 5km
         # [Latitud Sur, Longitud Oeste], [Latitud Norte, Longitud Este]
-        # Ejemplo aproximado para el sur/centro de España:
         limites_mapa = [[35.5, -9.5], [40.5, -1.5]] 
         
-        # 3. Crear el mapa base (podemos usar un estilo oscuro "CartoDB positron" o "dark_matter" para que resalten los colores)
+        # 3. Crear el mapa base estilo oscuro
         m = folium.Map(location=[37.8882, -4.7794], zoom_start=7, tiles="CartoDB dark_matter")
         
-        # 4. Superponer la imagen de la simulación con transparencia (opacity)
+        # 4. Superponer la imagen de la simulación con transparencia
         if os.path.exists(ruta_capa_img):
             folium.raster_layers.ImageOverlay(
                 image=ruta_capa_img,
                 bounds=limites_mapa,
-                opacity=0.6,  # Ajusta la transparencia para ver las carreteras e información debajo
+                opacity=0.6,
                 interactive=True,
                 cross_origin=False
             ).add_to(m)
+        else:
+            st.caption("⚠️ Imagen de simulación no disponible para esta hora exacta.")
         
-        # 5. Añadir también el marcador del pueblo que esté seleccionado en el buscador para ubicarlo
+        # 5. Añadir también el marcador del pueblo seleccionado
         folium.Marker(
             location=[lat_pueblo, lon_pueblo],
             popup=f"📍 {pueblo_elegido}",
-            icon=folium.Icon(color="red", icon="geo-alt-fill", prefix="fa")
+            icon=folium.Icon(color="red", icon="info-sign")
         ).add_to(m)
         
         # Renderizar en Streamlit
         st_folium(m, width="100%", height=500, key="mapa_windy_render")
-        
         
         st.write("---")
 
