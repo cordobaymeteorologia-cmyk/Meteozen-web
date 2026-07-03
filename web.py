@@ -204,6 +204,8 @@ with tab_municipios:
                         "Temperatura (°C)": fila_pueblo["temperatura"],
                         "Viento (km/h)": fila_pueblo["viento"],
                         "Lluvia (mm)": fila_pueblo["lluvia"]
+                        "Humedad (%)": fila_pueblo["humedad"]
+                        "Nubosidad (%)": fila_pueblo["nubosidad"]
                     })
             
             df_pronostico = pd.DataFrame(cronograma)
@@ -237,6 +239,22 @@ with tab_municipios:
                 fig_viento = px.line(df_pronostico, x="Fecha/Hora", y="Viento (km/h)", title="💨 Velocidad del Viento (km/h)", markers=True, color_discrete_sequence=['#FF9933'])
                 fig_viento.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Velocidad (km/h)")
                 st.plotly_chart(fig_viento, use_container_width=True)
+
+            st.write("---")
+
+            col_g3, col_g4 = st.columns(2)
+            with col_g3:
+                # Línea interactiva con marcadores de color cyan/azul claro para la humedad
+                fig_humedad = px.line(df_pronostico, x="Fecha/Hora", y="Humedad (%)", title="💧 Evolución de la Humedad Relativa (%)", markers=True, color_discrete_sequence=['#00D2FF'])
+                fig_humedad.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Humedad (%)", yaxis=dict(range=[0, 105]))
+                st.plotly_chart(fig_humedad, use_container_width=True)
+            with col_g4:
+                # Usamos una gráfica de área rellena en gris claro para simular visualmente el cielo cubierto
+                fig_nubes = px.area(df_pronostico, x="Fecha/Hora", y="Nubosidad (%)", title="☁️ Evolución de la Cobertura Nubosa (%)", color_discrete_sequence=['#A0A0A0'])
+                fig_nubes.update_layout(xaxis_title="Fecha/Hora (UTC+2)", yaxis_title="Nubosidad (%)", yaxis=dict(range=[0, 105]))
+                st.plotly_chart(fig_nubes, use_container_width=True)
+
+                
         else:
             st.warning("⏳ Los datos numéricos para los municipios aún se están procesando...")
     else:
