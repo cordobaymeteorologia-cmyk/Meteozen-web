@@ -203,9 +203,9 @@ with tab_municipios:
                         "Fecha/Hora": momento_exacto.strftime("%d/%m %H:%M"),
                         "Temperatura (°C)": fila_pueblo["temperatura"],
                         "Viento (km/h)": fila_pueblo["viento"],
-                        "Lluvia (mm)": fila_pueblo["lluvia"]
-                        "Humedad (%)": fila_pueblo["humedad"]
-                        "Nubosidad (%)": fila_pueblo["nubosidad"]
+                        "Lluvia (mm)": fila_pueblo["lluvia"],
+                        "Humedad (%)": fila_pueblo["humedad"],
+                        "Nubosidad (%)": fila_pueblo["nubosidad"],
                     })
             
             df_pronostico = pd.DataFrame(cronograma)
