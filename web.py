@@ -295,7 +295,7 @@ with tab_avisos:
     if os.path.exists(ruta_completa_imagen):
         st.image(
             ruta_completa_imagen, 
-            widht=700 
+            width=700 
         )
     else:
         st.warning(
