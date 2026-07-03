@@ -282,7 +282,7 @@ with tab_avisos:
     hora_local = (hora_seleccionada + 2) % 24
     
     # Mostramos el cartel destacado con las dos horas (Válido para...)
-    st.info(f"📅 **Avisos válidos para: {hora_local:02d}:00 (UTC+2)")
+    st.info(f"📅 Avisos válidos para: {hora_local:02d}:00 (UTC+2)")
 
     # 3. 🌟 RUTA RELATIVA PARA LA NUBE (Busca dentro del propio repositorio cargado)
     # Ya no usamos "/home/david/..." -> Buscamos en el directorio actual del servidor "."
