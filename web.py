@@ -48,6 +48,8 @@ with tab_mapas:
         "Viento a 10m 💨": os.path.join("salida_viento", "viento_{:02d}.png"),
         "Lluvia Horaria 🌧️": os.path.join("salida_lluvia_horaria", "lluvia_{:02d}.png"),
         "Lluvia Acumulada 🌊": os.path.join("salida_lluvia_acumulada", "lluvia_acum_{:02d}.png"),
+        "Humedad Relativa 💧": os.path.join("salida_humedad", "humedad_{:02d}.png"),      
+        "Cobertura Nubosa ☁️": os.path.join("salida_nubosidad", "nubes_{:02d}.png"),       
     }
 
     variable_seleccionada = st.selectbox(
@@ -128,7 +130,7 @@ with tab_municipios:
         with col_capa:
             capa_seleccionada = st.selectbox(
                 "Selecciona la capa del mapa:",
-                ["Temperatura 🌡️", "Lluvia Horaria 🌧️", "Viento 💨"],
+                ["Temperatura 🌡️", "Lluvia Horaria 🌧️", "Viento 💨", "Humedad Relativa 💧", "Cobertura Nubosa ☁️"],
                 key="capa_mapa_interactivo"
             )
             
@@ -150,6 +152,8 @@ with tab_municipios:
             "Temperatura 🌡️": os.path.join("salida_temperatura_mapa", "temperatura_{:02d}.png"),
             "Lluvia Horaria 🌧️": os.path.join("salida_lluvia_horaria_mapa", "lluvia_{:02d}.png"),
             "Viento 💨": os.path.join("salida_viento_mapa", "viento_{:02d}.png"),
+            "Humedad Relativa 💧": os.path.join("salida_humedad_mapa", "humedad_{:02d}.png"), 
+            "Cobertura Nubosa ☁️": os.path.join("salida_nubosidad_mapa", "nubes_{:02d}.png"), 
         }
         
         ruta_capa_img = MAPA_CAPAS[capa_seleccionada].format(hora_mapa)
