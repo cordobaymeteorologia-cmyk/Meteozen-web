@@ -248,6 +248,12 @@ with tab_avisos:
         "⚠️IMPORTANTE: Toma estos avisos como una referencia. En caso de tiempo severo, siempre sigue las alertas de la AEMET. Estos avisos son automáticos y pueden tener errores."
     )
 
+     fecha_mapa = fecha_inicio_prevision + datetime.timedelta(hours=hora + 2)
+
+    st.subheader(
+        f"📆 Avisos válidos para el: {fecha_mapa.strftime('%d/%m/%Y a las %H:%M')} UTC+2"
+    )
+
     # 1. Selector de Variable de Aviso
     opcion_mapa = st.selectbox(
         "📊 Selecciona el tipo de aviso:",
