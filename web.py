@@ -295,8 +295,7 @@ with tab_avisos:
     if os.path.exists(ruta_completa_imagen):
         st.image(
             ruta_completa_imagen, 
-            caption=f"Alertas estimadas por MeteoZen para: {opcion_mapa} | Hora: {hora_seleccionada:02d}:00 UTC",
-            use_container_width=True
+            widht=700 
         )
     else:
         st.warning(
