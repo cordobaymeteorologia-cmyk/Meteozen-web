@@ -20,7 +20,7 @@ st.write(
 )
 
 # Creamos las dos pestañas principales de la interfaz
-tab_mapas, tab_municipios = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"])
+tab_mapas, tab_municipios, tab_avisos = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"])
 
 # ==========================================
 # LÓGICA DINÁMICA DE FECHAS (Se queda arriba para que sirva a ambas pestañas)
