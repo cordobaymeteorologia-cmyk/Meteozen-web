@@ -20,7 +20,7 @@ st.write(
 )
 
 # Creamos las dos pestañas principales de la interfaz
-tab_mapas, tab_municipios = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio"])
+tab_mapas, tab_municipios = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"])
 
 # ==========================================
 # LÓGICA DINÁMICA DE FECHAS (Se queda arriba para que sirva a ambas pestañas)
@@ -237,3 +237,65 @@ with tab_municipios:
             st.warning("⏳ Los datos numéricos para los municipios aún se están procesando...")
     else:
         st.error("❌ Los datos de las localidades no están disponibles ahora mismo.")
+
+# ==========================================
+# PESTAÑA NUEVA: ⚠️ AVISOS METEOROLÓGICOS (AEMET COMARCAL)
+# ==========================================
+with tab_avisos:
+    st.header("⚠️ Sistema de Avisos Meteorológicos Comarcales (MeteoZen)")
+    st.write(
+        "Esta sección analiza los máximos del modelo WRF por comarcas y los cruza en tiempo real "
+        "con los umbrales oficiales de la AEMET para detectar alertas de nivel Amarillo, Naranja o Rojo."
+    )
+
+    # 1. Selector de Variable de Aviso
+    opcion_mapa = st.selectbox(
+        "📊 Selecciona la Variable a Monitorizar:",
+        ["Temperatura Máxima (T2)", "Rachas de Viento", "Precipitación en 1 Hora"],
+        key="pestana_avisos_variable"
+    )
+
+    # Diccionarios para traducir la selección a tus carpetas y archivos de Linux
+    diccionario_carpetas = {
+        "Temperatura Máxima (T2)": "salida_avisos_t2",
+        "Rachas de Viento": "salida_avisos_viento",
+        "Precipitación en 1 Hora": "salida_avisos_lluvia1h"
+    }
+    diccionario_prefijos = {
+        "Temperatura Máxima (T2)": "t2",
+        "Rachas de Viento": "viento",
+        "Precipitación en 1 Hora": "lluvia1h"
+    }
+
+    carpeta_seleccionada = diccionario_carpetas[opcion_mapa]
+    prefijo_archivo = diccionario_prefijos[opcion_mapa]
+
+    # 2. Selector deslizante de horas (Simulación de 24 horas del WRF)
+    hora_seleccionada = st.select_slider(
+        "🕒 Evolución horaria de los avisos (UTC):",
+        options=list(range(24)),
+        format_func=lambda x: f"{x:02d}:00 UTC",
+        key="pestana_avisos_hora"
+    )
+
+    # 3. Construcción de la ruta dinámica apuntando a tu Escritorio
+    base_path = f"/home/david/Escritorio/phyton/{carpeta_seleccionada}"
+    nombre_imagen = f"{prefijo_archivo}_{hora_seleccionada:02d}.png"
+    ruta_completa_imagen = os.path.join(base_path, nombre_imagen)
+
+    st.write("---")
+
+    # 4. Renderizado del mapa o control de procesamiento
+    if os.path.exists(ruta_completa_imagen):
+        st.image(
+            ruta_completa_imagen, 
+            caption=f"Alertas estimadas por MeteoZen para: {opcion_mapa} | Hora: {hora_seleccionada:02d}:00 UTC",
+            use_container_width=True
+        )
+    else:
+        st.warning(
+            f"⚠️ El mapa de avisos para las {hora_seleccionada:02d}:00 UTC aún no está disponible."
+        )
+        st.info(
+            "Asegúrate de que el script `avisos.py` haya terminado de procesar esta hora del modelo WRF."
+        )
