@@ -242,20 +242,19 @@ with tab_municipios:
 # PESTAÑA NUEVA: ⚠️ AVISOS METEOROLÓGICOS (AEMET COMARCAL)
 # ==========================================
 with tab_avisos:
-    st.header("⚠️ Sistema de Avisos Meteorológicos Comarcales (MeteoZen)")
+    st.header("⚠️ Avisos (MeteoZen)")
     st.write(
-        "Esta sección analiza los máximos del modelo WRF por comarcas y los cruza en tiempo real "
-        "con los umbrales oficiales de la AEMET para detectar alertas de nivel Amarillo, Naranja o Rojo."
+        "Avisos automáticos con los umbrales de la AEMET y su plan MeteoAlerta."
+        "⚠️IMPORTANTE: Toma estos avisos como una referencia. En caso de tiempo severo, siempre sigue las alertas de la AEMET. Estos avisos son automáticos y pueden tener errores."
     )
 
     # 1. Selector de Variable de Aviso
     opcion_mapa = st.selectbox(
-        "📊 Selecciona la Variable a Monitorizar:",
+        "📊 Selecciona el tipo de aviso:",
         ["Temperatura Máxima (T2)", "Rachas de Viento", "Precipitación en 1 Hora"],
         key="pestana_avisos_variable"
     )
 
-    # Diccionarios para traducir la selección a tus carpetas y archivos de Linux
     diccionario_carpetas = {
         "Temperatura Máxima (T2)": "salida_avisos_t2",
         "Rachas de Viento": "salida_avisos_viento",
@@ -270,7 +269,7 @@ with tab_avisos:
     carpeta_seleccionada = diccionario_carpetas[opcion_mapa]
     prefijo_archivo = diccionario_prefijos[opcion_mapa]
 
-    # 2. Selector deslizante de horas (Simulación de 24 horas del WRF)
+    # 2. Selector deslizante de horas
     hora_seleccionada = st.select_slider(
         "🕒 Evolución horaria de los avisos (UTC):",
         options=list(range(24)),
@@ -278,14 +277,14 @@ with tab_avisos:
         key="pestana_avisos_hora"
     )
 
-    # 3. Construcción de la ruta dinámica apuntando a tu Escritorio
-    base_path = f"/home/david/Escritorio/phyton/{carpeta_seleccionada}"
+    # 3. 🌟 RUTA RELATIVA PARA LA NUBE (Busca dentro del propio repositorio cargado)
+    # Ya no usamos "/home/david/..." -> Buscamos en el directorio actual del servidor "."
     nombre_imagen = f"{prefijo_archivo}_{hora_seleccionada:02d}.png"
-    ruta_completa_imagen = os.path.join(base_path, nombre_imagen)
+    ruta_completa_imagen = os.path.join(".", carpeta_seleccionada, nombre_imagen)
 
     st.write("---")
 
-    # 4. Renderizado del mapa o control de procesamiento
+    # 4. Renderizado del mapa
     if os.path.exists(ruta_completa_imagen):
         st.image(
             ruta_completa_imagen, 
@@ -294,8 +293,8 @@ with tab_avisos:
         )
     else:
         st.warning(
-            f"⚠️ El mapa de avisos para las {hora_seleccionada:02d}:00 UTC aún no está disponible."
+            f"⚠️ El mapa de avisos para las {hora_seleccionada:02d}:00 UTC aún no está disponible en el servidor."
         )
         st.info(
-            "Asegúrate de que el script `avisos.py` haya terminado de procesar esta hora del modelo WRF."
+            "No hay datos."
         )
