@@ -109,17 +109,29 @@ with tab_municipios:
     df_pueblos = cargar_localidades()
 
     if df_pueblos is not None:
-        # 1. Buscador de pueblos y obtención de coordenadas
-        lista_pueblos = sorted(df_pueblos["Localidad"].unique())
-        pueblo_elegido = st.selectbox("Escribe o selecciona tu municipio:", lista_pueblos, key="selector_pueblo")
+        # =====================================================================
+        # 1. FILTRO EN DOS PASOS (OPTIMIZACIÓN ANTI-CONGELAMIENTO)
+        # =====================================================================
+        # Primero elegimos la provincia para aligerar la carga del navegador
+        lista_provincias = sorted(df_pueblos["Provincia"].unique())
+        provincia_elegida = st.selectbox("1. Selecciona tu provincia:", lista_provincias, key="selector_provincia")
         
-        datos_pueblo = df_pueblos[df_pueblos["Localidad"] == pueblo_elegido].iloc[0]
+        # Filtramos el DataFrame para quedarnos SOLO con los pueblos de esa provincia
+        df_filtrado = df_pueblos[df_pueblos["Provincia"] == provincia_elegida]
+        lista_pueblos_filtrados = sorted(df_filtrado["Localidad"].unique())
+        
+        # Ahora el buscador solo tiene que procesar unos pocos pueblos, ¡adiós cuelgues!
+        pueblo_elegido = st.selectbox("2. Selecciona tu municipio:", lista_pueblos_filtrados, key="selector_pueblo")
+        
+        # Obtenemos los datos del pueblo seleccionado del DataFrame filtrado
+        datos_pueblo = df_filtrado[df_filtrado["Localidad"] == pueblo_elegido].iloc[0]
         lat_pueblo = datos_pueblo["Latitud"]
         lon_pueblo = datos_pueblo["Longitud"]
         provincia = datos_pueblo["Provincia"]
         altitud = datos_pueblo.get("Altitud", "N/A")
+        # =====================================================================
         
-        st.markdown(f"### 📍 Pronóstico para: **{pueblo_elegido} ({provincia})** — *Altitud: {altitud} m*")
+        st.markdown(f"### 📍 Pronóstico para: **{pueblo_elegido} ({provincia})** — *Altitud: {altitud} m*")       
         st.write("---")
         
         # 2. SECCIÓN MAPA INTERACTIVO ESTILO WINDY
