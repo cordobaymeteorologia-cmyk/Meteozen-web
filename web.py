@@ -20,7 +20,12 @@ st.write(
 )
 
 # Creamos las dos pestañas principales de la interfaz
-tab_mapas, tab_municipios, tab_avisos = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"])
+#tab_mapas, tab_municipios, tab_avisos = st.tabs(["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"])
+opcion_menu = st.sidebar.radio(
+    "Navegación 🧭",
+    ["🗺️ Mapas Generales", "🔍 Predicción por Municipio", "⚠️ Avisos METEOZEN"]
+)
+
 
 # ==========================================
 # LÓGICA DINÁMICA DE FECHAS (Se queda arriba para que sirva a ambas pestañas)
@@ -41,7 +46,8 @@ fecha_inicio_prevision = fecha_base + datetime.timedelta(days=1)
 # ==========================================
 # PESTAÑA 1: MAPAS GENERALES (Tu código original intacto)
 # ==========================================
-with tab_mapas:
+#with tab_mapas:
+if opcion_menu == "🗺️ Mapas Generales":
     with st.container():
         OPCIONES = {
             "Radar de Reflectividad ⛈️": os.path.join("salida_radar", "radar_{:02d}.png"),
@@ -95,7 +101,8 @@ with tab_mapas:
 # ==========================================
 # PESTAÑA 2: PREDICCIÓN POR MUNICIPIO (Buscador Local)
 # ==========================================
-with tab_municipios:
+#with tab_municipios:
+if opcion_menu == "🔍 Predicción por Municipio":
     with st.container():
         st.header("🔍 Predicción por Localidad")
         st.write("Consulta la evolución del tiempo directamente en tu municipio para las próximas 24 horas.")
@@ -277,7 +284,8 @@ with tab_municipios:
 # ==========================================
 # PESTAÑA NUEVA: ⚠️ AVISOS METEOROLÓGICOS (AEMET COMARCAL)
 # ==========================================
-with tab_avisos:
+#with tab_avisos:
+if opcion_menu == "⚠️ Avisos METEOZEN":
     with st.container():
         st.header("⚠️ Avisos (MeteoZen)")
         st.write(
